@@ -104,7 +104,7 @@ public class NewAPIAdapter {
     }
 
     @Scheduled(fixedDelay = 1000)
-    public void testScheduled(){
+    public void testScheduled() {
         System.out.println("Print");
     }
 
