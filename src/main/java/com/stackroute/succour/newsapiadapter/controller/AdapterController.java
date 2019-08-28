@@ -30,6 +30,7 @@ public class AdapterController {
 
     /**
      * Queries newsapi.org for every news article containing the given keywords
+     *TODO change the method to take in parameters and add them as queries in URI
      *
      * @return Flux<NewsAPIResponseObject> News articles as JSON
      */
