@@ -4,6 +4,8 @@ import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
 import org.apache.http.client.utils.URIBuilder;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -20,6 +22,7 @@ import java.util.Properties;
  */
 
 @Service
+@EnableScheduling
 public class NewAPIAdapter {
 
     private String API_KEY; /*Get API Key from properties*/
@@ -99,4 +102,11 @@ public class NewAPIAdapter {
         }
         return Flux.fromArray(newsAPIResponseObject.getArticles());
     }
+
+    @Scheduled(fixedDelay = 1000)
+    public void testScheduled(){
+        System.out.println("Print");
+    }
+
+
 }
