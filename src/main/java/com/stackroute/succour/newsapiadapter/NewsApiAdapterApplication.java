@@ -6,6 +6,7 @@ import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.Scheduled;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
@@ -54,8 +55,16 @@ public class NewsApiAdapterApplication {
 		int count = 0;
 		newAPIAdapter.myFlux.subscribe(article-> {System.out.println(article.toString());
 			System.out.println(count);
-
 		});
+	}
+
+	@Scheduled(fixedDelay = 1000)
+	public void callAgain(){
+		System.out.println("-----------------------");
+		newAPIAdapter.myFlux.subscribe(article-> {
+			System.out.println(article.toString() + "\n\n");
+		});
+		System.out.println("-----------------------");
 	}
 
 }

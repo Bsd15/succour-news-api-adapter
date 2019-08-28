@@ -4,6 +4,7 @@ import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
 import org.apache.http.client.utils.URIBuilder;
+import org.hibernate.validator.constraints.URL;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,9 +13,12 @@ import reactor.core.publisher.Flux;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -30,6 +34,7 @@ public class NewAPIAdapter {
     private String API_ENDPOINT;
     private Properties appProps;
     public Flux myFlux;
+    private List a;
 
     private WebClient webClient = WebClient.create();
 
@@ -46,6 +51,8 @@ public class NewAPIAdapter {
         appProps.load(new FileInputStream(appConfigPath));
         API_KEY = appProps.getProperty("api_key");
         API_ENDPOINT = appProps.getProperty("api_endpoint");
+        a = new ArrayList();
+        myFlux = Flux.fromIterable(a);
     }
 
     /**
@@ -56,6 +63,7 @@ public class NewAPIAdapter {
      * @return Flux<Article> News articles as JSON
      */
 //    @GetMapping("getNews")
+    @Scheduled(fixedDelay = 1000)
     public Flux<Article> getNews() throws EmptyArticlesException {
         URI apiQueryURI = null; /*To store the URI formed by URIBuilder*/
         /*
@@ -94,15 +102,15 @@ public class NewAPIAdapter {
          * */
         assert newsAPIResponseObject != null : "Empty NewsAPIResponseObject";
         Article[] articles = newsAPIResponseObject.getArticles();
-        ArrayList a = new ArrayList();
-        myFlux = Flux.fromIterable(a);
-        for (Article article : articles) {
+//        for (Article article : articles) {
+//
+//            a.add(article);
+//            break;
+//        }
 
-            a.add(article);
-            break;
-        }
-
-        a.add(newsAPIResponseObject.getArticles()[1]);
+//        a.add(newsAPIResponseObject.getArticles()[1]);
+        a.addAll(Arrays.asList(newsAPIResponseObject.getArticles()));
+        System.out.println("Size of list: " + a.size());
         /*
          * Check if articles array is null or empty.
          * If yes throw EmptyArticlesException
@@ -115,9 +123,9 @@ public class NewAPIAdapter {
     }
 
 //    @Scheduled(fixedDelay = 1000)
-    public void testScheduled() {
-        System.out.println("Print");
-    }
+//    public void testScheduled() {
+//        System.out.println("Print");
+//    }
 
 
 }
