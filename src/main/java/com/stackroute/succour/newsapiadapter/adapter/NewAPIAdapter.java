@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -28,6 +29,7 @@ public class NewAPIAdapter {
     private String API_KEY; /*Get API Key from properties*/
     private String API_ENDPOINT;
     private Properties appProps;
+    public Flux myFlux;
 
     private WebClient webClient = WebClient.create();
 
@@ -92,6 +94,15 @@ public class NewAPIAdapter {
          * */
         assert newsAPIResponseObject != null : "Empty NewsAPIResponseObject";
         Article[] articles = newsAPIResponseObject.getArticles();
+        ArrayList a = new ArrayList();
+        myFlux = Flux.fromIterable(a);
+        for (Article article : articles) {
+
+            a.add(article);
+            break;
+        }
+
+        a.add(newsAPIResponseObject.getArticles()[1]);
         /*
          * Check if articles array is null or empty.
          * If yes throw EmptyArticlesException
@@ -103,7 +114,7 @@ public class NewAPIAdapter {
         return Flux.fromArray(newsAPIResponseObject.getArticles());
     }
 
-    @Scheduled(fixedDelay = 1000)
+//    @Scheduled(fixedDelay = 1000)
     public void testScheduled() {
         System.out.println("Print");
     }

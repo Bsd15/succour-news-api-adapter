@@ -31,14 +31,31 @@ public class NewsApiAdapterApplication {
 			returnData = newAPIAdapter.getNews();
 			List<Article> articleList = new ArrayList<>();
 			returnData.subscribe(articleList::add);
+			int i = 0;
 			for (Article article : articleList) {
 				System.out.println("-----------------");
+				System.out.println("Count: " + i++);
 				System.out.println(article);
+				System.out.println("-----------------");
+			}
+			returnData.concatWith(newAPIAdapter.getNews());
+//			returnData.subscribe(articleList::add);
+			i = 0;
+			System.out.println("After concat");
+			for (Article article : articleList) {
+				System.out.println("-----------------");
+				System.out.println("Count: " + i++);
+//				System.out.println(article);
 				System.out.println("-----------------");
 			}
 		} catch (EmptyArticlesException e) {
 			e.printStackTrace();
 		}
+		int count = 0;
+		newAPIAdapter.myFlux.subscribe(article-> {System.out.println(article.toString());
+			System.out.println(count);
+
+		});
 	}
 
 }
