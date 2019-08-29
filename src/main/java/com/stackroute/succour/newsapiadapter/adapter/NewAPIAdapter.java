@@ -4,7 +4,6 @@ import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
 import org.apache.http.client.utils.URIBuilder;
-import org.hibernate.validator.constraints.URL;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import reactor.core.publisher.Flux;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -33,8 +31,8 @@ public class NewAPIAdapter {
     private String API_KEY; /*Get API Key from properties*/
     private String API_ENDPOINT;
     private Properties appProps;
-    public Flux myFlux;
-    private List a;
+    public Flux myFlux; /*Flux to store the article objects*/
+    private List<Article> articlesList;
 
     private WebClient webClient = WebClient.create();
 
@@ -51,8 +49,8 @@ public class NewAPIAdapter {
         appProps.load(new FileInputStream(appConfigPath));
         API_KEY = appProps.getProperty("api_key");
         API_ENDPOINT = appProps.getProperty("api_endpoint");
-        a = new ArrayList();
-        myFlux = Flux.fromIterable(a);
+        articlesList = new ArrayList(); /*Initialize arraylist to store articles called during getNews*/
+        myFlux = Flux.fromIterable(articlesList); /*Create flux from arraylist*/
     }
 
     /**
@@ -89,7 +87,6 @@ public class NewAPIAdapter {
          * The call is <b>Synchronous</b>.
          * */
         NewsAPIResponseObject newsAPIResponseObject = webClient.get()
-                //TODO edit endpoint to query for articles
                 .uri(apiQueryURI)
                 /*Put the API Key in header for Authentication. Recommended by Documentation in newapi.org*/
                 .header("X-Api-Key", API_KEY)
@@ -102,15 +99,8 @@ public class NewAPIAdapter {
          * */
         assert newsAPIResponseObject != null : "Empty NewsAPIResponseObject";
         Article[] articles = newsAPIResponseObject.getArticles();
-//        for (Article article : articles) {
-//
-//            a.add(article);
-//            break;
-//        }
-
-//        a.add(newsAPIResponseObject.getArticles()[1]);
-        a.addAll(Arrays.asList(newsAPIResponseObject.getArticles()));
-        System.out.println("Size of list: " + a.size());
+        articlesList.addAll(Arrays.asList(newsAPIResponseObject.getArticles()));
+        System.out.println("Size of list: " + articlesList.size());
         /*
          * Check if articles array is null or empty.
          * If yes throw EmptyArticlesException
@@ -121,11 +111,4 @@ public class NewAPIAdapter {
         }
         return Flux.fromArray(newsAPIResponseObject.getArticles());
     }
-
-//    @Scheduled(fixedDelay = 1000)
-//    public void testScheduled() {
-//        System.out.println("Print");
-//    }
-
-
 }

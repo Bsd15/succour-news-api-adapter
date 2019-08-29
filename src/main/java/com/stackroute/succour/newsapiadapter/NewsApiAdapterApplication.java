@@ -53,6 +53,7 @@ public class NewsApiAdapterApplication {
 			e.printStackTrace();
 		}
 		int count = 0;
+		ArrayList<Article> articlesList = new ArrayList<>();
 		newAPIAdapter.myFlux.subscribe(article-> {System.out.println(article.toString());
 			System.out.println(count);
 		});
