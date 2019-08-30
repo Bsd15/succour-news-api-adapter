@@ -16,7 +16,7 @@ public class NewsApiAdapterApplication {
 		try {
 			NewAPIAdapter newAPIAdapter = new NewAPIAdapter();
 			newAPIAdapter.addQueryParam("india");
-			newAPIAdapter.startAdapter();
+			newAPIAdapter.startNewStream();
 		} catch (IOException | EmptyQueryParamsException e) {
 			e.printStackTrace();
 		} catch (EmptyAPIQueryURIException e) {

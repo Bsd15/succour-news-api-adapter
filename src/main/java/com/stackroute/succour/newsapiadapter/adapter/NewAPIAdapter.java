@@ -1,20 +1,20 @@
 package com.stackroute.succour.newsapiadapter.adapter;
 
+import com.stackroute.succour.newsapiadapter.domain.Article;
+import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyAPIQueryURIException;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyQueryParamsException;
-import com.stackroute.succour.newsapiadapter.service.NewsFetchService;
 import org.apache.http.client.utils.URIBuilder;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Stream;
 
 
 public class NewAPIAdapter {
@@ -23,6 +23,9 @@ public class NewAPIAdapter {
     private String API_KEY; /*Get API Key from properties*/
     private String BASE_URI; /*Get BASE_URI from properties*/
     private URI apiQueryURI = null; /*To store the URI formed by URIBuilder*/
+    private Flux<Article[]> newResponseFlux;
+    private WebClient webClient = WebClient.create();
+
 
     public NewAPIAdapter() throws IOException {
         String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
@@ -79,13 +82,49 @@ public class NewAPIAdapter {
         }
     }
 
-    public void startAdapter() throws EmptyQueryParamsException, EmptyAPIQueryURIException, IOException {
-        /*Check if queryParams are not null*/
+    /**
+     * Queries newsapi.org for every news article containing the given keywords and returns
+     * them as Flux
+     * TODO change the method to take in parameters and add them as queries in URI
+     *
+     * @return NewsAPIResponseObject
+     */
+
+    public Article[] fetchNews() {
+        /*
+         * Make the call to the URI using WebClient.
+         * Retrieve the result as a Mono object as the retrieved result is a single
+         * JSON object containing all the articles inside as an Array.
+         * Add a header containing the API_KEY for authentication.
+         * The call is <b>Synchronous</b>.
+         * */
+
+        NewsAPIResponseObject newsAPIResponseObject = webClient.get()
+                .uri(apiQueryURI)
+                /*Put the API Key in header for Authentication. Recommended by Documentation in newapi.org*/
+                .header("X-Api-Key", API_KEY)
+                .retrieve()
+                .bodyToMono(NewsAPIResponseObject.class)
+                .block();
+
+        return newsAPIResponseObject.getArticles();
+    }
+
+    public void startNewStream() throws EmptyQueryParamsException, EmptyAPIQueryURIException, IOException {
+
+
         if (this.queryParams != null && (!this.queryParams.isEmpty())) {
             buildURI();
             /*Check if URI is not null*/
             if (apiQueryURI != null) {
-                NewsFetchService service = new NewsFetchService(API_KEY, apiQueryURI);
+                newResponseFlux = Flux.fromStream(
+                        Stream.generate(
+                                this::fetchNews
+                        )
+                );
+
+                Flux<Article> f = newResponseFlux.flatMap(article -> article);
+
             } else {
                 throw new EmptyAPIQueryURIException();
             }
