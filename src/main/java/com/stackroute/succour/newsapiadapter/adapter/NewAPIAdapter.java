@@ -123,8 +123,6 @@ public class NewAPIAdapter {
                         )
                 );
 
-                Flux<Article> f = newResponseFlux.flatMap(article -> article);
-
             } else {
                 throw new EmptyAPIQueryURIException();
             }
