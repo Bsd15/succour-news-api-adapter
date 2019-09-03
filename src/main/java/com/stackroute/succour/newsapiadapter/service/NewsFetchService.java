@@ -1,5 +1,8 @@
 package com.stackroute.succour.newsapiadapter.service;
 
+import com.google.common.base.Supplier;
+import com.ibm.common.activitystreams.Activity;
+import com.ibm.common.activitystreams.NLV;
 import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
@@ -13,6 +16,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.ibm.common.activitystreams.Makers.activity;
+import static com.ibm.common.activitystreams.Makers.object;
 
 @Data
 @Getter
@@ -43,7 +49,11 @@ public class NewsFetchService implements Job {
                 .bodyToMono(NewsAPIResponseObject.class)
                 .block();
         assert newsAPIResponseObject != null : new EmptyArticlesException();
-//        System.out.println(newsAPIResponseObject.toString());
         articlesList.addAll(Arrays.asList(newsAPIResponseObject.getArticles()));
+    }
+
+    private Activity convertToActivityStream(Article article) {
+        Activity articleActivity = activity().object(ob)
+        return null;
     }
 }

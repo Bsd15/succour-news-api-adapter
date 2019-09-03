@@ -18,13 +18,17 @@ public class NewsApiAdapterApplication {
 			NewsAPIAdapter newsAPIAdapter = new NewsAPIAdapter();
 			newsAPIAdapter.addQueryParam("india");
 			newsAPIAdapter.startNewsStream();
+			Thread.sleep(60L * 100L);
+			newsAPIAdapter.getNewsStream().subscribe(article -> System.out.println(article));
 		} catch (IOException | EmptyQueryParamsException e) {
 			e.printStackTrace();
 		} catch (EmptyAPIQueryURIException e) {
 			e.printStackTrace();
 		} catch (SchedulerException e) {
 			e.printStackTrace();
-		}
-	}
+		} catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
