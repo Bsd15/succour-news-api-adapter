@@ -53,7 +53,7 @@ public class NewsFetchService implements Job {
     }
 
     private Activity convertToActivityStream(Article article) {
-        Activity articleActivity = activity().object(ob)
+//        Activity articleActivity = activity().object(ob)
         return null;
     }
 }

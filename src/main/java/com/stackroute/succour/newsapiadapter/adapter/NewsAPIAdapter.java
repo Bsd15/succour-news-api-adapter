@@ -28,7 +28,7 @@ public class NewsAPIAdapter {
     private String API_KEY; /*Get API Key from properties*/
     private String BASE_URI; /*Get BASE_URI from properties*/
     private URI apiQueryURI = null; /*To store the URI formed by URIBuilder*/
-    private Flux<Article[]> newResponseFlux;
+    private Flux<Article> newsResponseFlux;
     private WebClient webClient = WebClient.create();
     private SchedulerFactory schedulerFactory;
     private Scheduler scheduler;
@@ -148,14 +148,7 @@ public class NewsAPIAdapter {
                 initNewsFetchJob();
                 addJobToScheduler();
                 startNewsFetchService();
-                for (int i = 0; i < 5; i++) {
-                    try {
-                        Thread.sleep(60L * 100L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println(articlesList.toString());
-                }
+                newsResponseFlux = Flux.fromIterable(articlesList);
             } else {
                 throw new EmptyAPIQueryURIException();
             }
@@ -178,8 +171,11 @@ public class NewsAPIAdapter {
         }
     }
 
+    public Flux<Article> getNewsStream() {
+        return this.newsResponseFlux;
+    }
+
     public void stopNewsStream() throws SchedulerException {
         stopNewsFetchService();
     }
-
 }
