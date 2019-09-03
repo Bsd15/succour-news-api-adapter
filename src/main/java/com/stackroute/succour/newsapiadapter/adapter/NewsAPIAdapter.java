@@ -96,34 +96,6 @@ public class NewsAPIAdapter {
         }
     }
 
-    /**
-     * Queries newsapi.org for every news article containing the given keywords and returns
-     * them as Flux
-     * TODO change the method to take in parameters and add them as queries in URI
-     *
-     * @return NewsAPIResponseObject
-     */
-
-    public Article[] fetchNews() {
-        /*
-         * Make the call to the URI using WebClient.
-         * Retrieve the result as a Mono object as the retrieved result is a single
-         * JSON object containing all the articles inside as an Array.
-         * Add a header containing the API_KEY for authentication.
-         * The call is <b>Synchronous</b>.
-         * */
-
-        NewsAPIResponseObject newsAPIResponseObject = webClient.get()
-                .uri(apiQueryURI)
-                /*Put the API Key in header for Authentication. Recommended by Documentation in newapi.org*/
-                .header("X-Api-Key", API_KEY)
-                .retrieve()
-                .bodyToMono(NewsAPIResponseObject.class)
-                .block();
-
-        return newsAPIResponseObject.getArticles();
-    }
-
     private void addJobToScheduler() throws SchedulerException {
         if (newsFetchJob != null && trigger != null) {
             scheduler.scheduleJob(newsFetchJob, trigger);
