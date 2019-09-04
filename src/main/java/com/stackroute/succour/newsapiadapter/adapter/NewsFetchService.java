@@ -1,15 +1,10 @@
-package com.stackroute.succour.newsapiadapter.service;
+package com.stackroute.succour.newsapiadapter.adapter;
 
-import com.google.common.base.Supplier;
 import com.ibm.common.activitystreams.Activity;
-import com.ibm.common.activitystreams.NLV;
 import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.quartz.*;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -17,18 +12,17 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.ibm.common.activitystreams.Makers.activity;
-import static com.ibm.common.activitystreams.Makers.object;
-
 @Data
 @Getter
 @Setter
 @NoArgsConstructor
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
-public class NewsFetchService implements Job {
-    private String API_KEY;
-    private URI APIQueryURI;
+class NewsFetchService implements Job {
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private static final String API_KEY = "389599afec1e4727a7de75f65b5f050c"; /*API Key required for newapi.org*/
+    private URI APIQueryURI; /*To be passed from NewsAPIAdapter*/
     private WebClient webClient;
     private List<Article> articlesList;
 

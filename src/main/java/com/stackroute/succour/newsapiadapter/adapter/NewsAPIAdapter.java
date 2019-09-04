@@ -1,21 +1,19 @@
 package com.stackroute.succour.newsapiadapter.adapter;
 
 import com.stackroute.succour.newsapiadapter.domain.Article;
-import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyAPIQueryURIException;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyQueryParamsException;
-import com.stackroute.succour.newsapiadapter.service.NewsFetchService;
 import org.apache.http.client.utils.URIBuilder;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
@@ -25,8 +23,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 public class NewsAPIAdapter {
 
     private List<String> queryParams; /*List of query strings to be added to the URI */
-    private String API_KEY; /*Get API Key from properties*/
-    private String BASE_URI; /*Get BASE_URI from properties*/
+    private static final String BASE_URI = "https://newsapi.org/v2/everything"; /*BASE_URI for newapi.org*/
     private URI apiQueryURI = null; /*To store the URI formed by URIBuilder*/
     private Flux<Article> newsResponseFlux;
     private WebClient webClient = WebClient.create();
@@ -37,12 +34,6 @@ public class NewsAPIAdapter {
     private ArrayList<Article> articlesList;
 
     public NewsAPIAdapter() throws IOException, SchedulerException {
-        String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
-        String appConfigPath = rootPath + "application.properties";
-        Properties appProps = new Properties();
-        appProps.load(new FileInputStream(appConfigPath));
-        API_KEY = appProps.getProperty("api_key");
-        BASE_URI = appProps.getProperty("base_uri");
         schedulerFactory = new StdSchedulerFactory();
         scheduler = schedulerFactory.getScheduler();
         articlesList = new ArrayList();
@@ -132,7 +123,6 @@ public class NewsAPIAdapter {
     private void initNewsFetchJob() {
         if (webClient != null && articlesList != null && apiQueryURI != null) {
             JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("API_KEY",API_KEY);
             jobDataMap.put("APIQueryURI", apiQueryURI);
             jobDataMap.put("webClient", webClient);
             jobDataMap.put("articlesList", articlesList);
