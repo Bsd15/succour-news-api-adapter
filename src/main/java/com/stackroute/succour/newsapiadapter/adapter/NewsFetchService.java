@@ -12,6 +12,15 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Service class to fetch data from newapi.org. The fields APIQueryURI, webClient,
+ * articlesList will be passed from NewsAPIAdapter class using jobDataMap and will be
+ * automatically assigned to the fields using the getters and setters.
+ *
+ * The object of this class will be created and destroyed again and again and thus @PersistJobDataAfterExecution and
+ * @DisallowConcurrentExecution are used to make the same data available for other instances
+ * of this class.
+ */
 @Data
 @Getter
 @Setter

@@ -20,6 +20,14 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 
+/**
+ * The adapter class is used to initialize and add start the NewsFetchService as a
+ * scheduler job.
+ * The adapter passes values required by the NewsFetchService through JobDataMap.
+ * The scheduler starts executing the job whenever the startNewsFetchService() is called.
+ * The job is executed for every 5 seconds and the articles form the fetched data is added
+ * to the articlesList.
+ */
 public class NewsAPIAdapter {
 
     private List<String> queryParams; /*List of query strings to be added to the URI */
@@ -31,7 +39,7 @@ public class NewsAPIAdapter {
     private Scheduler scheduler;
     private JobDetail newsFetchJob;
     private Trigger trigger;
-    private ArrayList<Article> articlesList;
+    private ArrayList<Article> articlesList; /*Used to store the articles fetched from the service.*/
 
     public NewsAPIAdapter() throws IOException, SchedulerException {
         schedulerFactory = new StdSchedulerFactory();
@@ -87,23 +95,44 @@ public class NewsAPIAdapter {
         }
     }
 
+    /**
+     * Add the newsFetchJob to the scheduler.
+     * @throws SchedulerException
+     */
     private void addJobToScheduler() throws SchedulerException {
         if (newsFetchJob != null && trigger != null) {
             scheduler.scheduleJob(newsFetchJob, trigger);
         }
     }
 
+    /**
+     * Start the scheduler.
+     * @throws SchedulerException
+     */
     private void startNewsFetchService() throws SchedulerException {
         scheduler.start();
     }
 
+    /**
+     * Stops the NewsFetchService by shutting down the scheduler.
+     * @throws SchedulerException
+     */
     private void stopNewsFetchService() throws SchedulerException {
         scheduler.shutdown(true);
     }
 
+    /**
+     * Used to start fetching data from newsapi.org by making repeated calls using Quartz
+     * scheduler.
+     * The method builds a query URI which is used by NewsFetchService to query the newapi.org server.
+     * After building the URI, initialize the newsFetchJob by calling initNewsFetchJob().
+     * Add the initialized newsFetchJob to the scheduler by calling addJobToScheduler().
+     * Start the scheduler by calling the startNewsFetchService().
+     * @throws EmptyQueryParamsException
+     * @throws EmptyAPIQueryURIException
+     * @throws SchedulerException
+     */
     public void startNewsStream() throws EmptyQueryParamsException, EmptyAPIQueryURIException, SchedulerException {
-
-
         if (this.queryParams != null && (!this.queryParams.isEmpty())) {
             buildURI();
             /*Check if URI is not null*/
@@ -120,6 +149,11 @@ public class NewsAPIAdapter {
         }
     }
 
+    /**
+     * Method to initialize the newsFetchJob with data required for NewsFetchService.
+     * Creates a JobDataMap, to which data is added.
+     * The JobDataMap object is then used to build the newsFetchJob.
+     */
     private void initNewsFetchJob() {
         if (webClient != null && articlesList != null && apiQueryURI != null) {
             JobDataMap jobDataMap = new JobDataMap();
@@ -137,6 +171,11 @@ public class NewsAPIAdapter {
         return this.newsResponseFlux;
     }
 
+    /**
+     * Used to stop the news stream by stopping the scheduler job for NewsFetchService.
+     *
+     * @throws SchedulerException
+     */
     public void stopNewsStream() throws SchedulerException {
         stopNewsFetchService();
     }
