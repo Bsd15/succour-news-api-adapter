@@ -3,10 +3,14 @@ package com.stackroute.succour.newsapiadapter.adapter;
 import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyAPIQueryURIException;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyQueryParamsException;
+import com.stackroute.succour.newsapiadapter.service.NewsFetchService;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 import org.apache.http.client.utils.URIBuilder;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.adapter.rxjava.RxJava2Adapter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
@@ -40,6 +44,9 @@ public class NewsAPIAdapter {
     private JobDetail newsFetchJob;
     private Trigger trigger;
     private ArrayList<Article> articlesList; /*Used to store the articles fetched from the service.*/
+    private PublishSubject<Article> articlePublishSubject;
+
+    int callCount = 1;
 
     public NewsAPIAdapter() throws IOException, SchedulerException {
         schedulerFactory = new StdSchedulerFactory();
@@ -47,6 +54,7 @@ public class NewsAPIAdapter {
         articlesList = new ArrayList();
         trigger = newTrigger().withIdentity("myTrigger", "group1").startNow()
                 .withSchedule(simpleSchedule().withIntervalInSeconds(5).repeatForever()).build();
+        articlePublishSubject = PublishSubject.create();
     }
 
     public List<String> getQueryParams() {
@@ -119,6 +127,7 @@ public class NewsAPIAdapter {
      */
     private void stopNewsFetchService() throws SchedulerException {
         scheduler.shutdown(true);
+        System.out.println("Scheduler shut down");
     }
 
     /**
@@ -141,6 +150,8 @@ public class NewsAPIAdapter {
                 addJobToScheduler();
                 startNewsFetchService();
                 newsResponseFlux = Flux.fromIterable(articlesList);
+//                flo = RxJava2Adapter.fluxToObservable(newsResponseFlux);
+//                articlesList.forEach(article -> articlePublishSubject.onNext(article));
             } else {
                 throw new EmptyAPIQueryURIException();
             }
@@ -160,6 +171,8 @@ public class NewsAPIAdapter {
             jobDataMap.put("APIQueryURI", apiQueryURI);
             jobDataMap.put("webClient", webClient);
             jobDataMap.put("articlesList", articlesList);
+            jobDataMap.put("articlePublishSubject", articlePublishSubject);
+            jobDataMap.put("callCount", callCount);
             newsFetchJob = newJob(NewsFetchService.class)
                     .withIdentity("job1", "group1")
                     .usingJobData(jobDataMap)
@@ -169,6 +182,10 @@ public class NewsAPIAdapter {
 
     public Flux<Article> getNewsStream() {
         return this.newsResponseFlux;
+    }
+
+    public PublishSubject<Article> getArticlePublishSubject() {
+        return articlePublishSubject;
     }
 
     /**

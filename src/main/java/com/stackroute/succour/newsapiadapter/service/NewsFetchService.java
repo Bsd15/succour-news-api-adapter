@@ -1,9 +1,10 @@
-package com.stackroute.succour.newsapiadapter.adapter;
+package com.stackroute.succour.newsapiadapter.service;
 
 import com.ibm.common.activitystreams.Activity;
 import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
+import io.reactivex.subjects.PublishSubject;
 import lombok.*;
 import org.quartz.*;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -27,13 +28,16 @@ import java.util.List;
 @NoArgsConstructor
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
-class NewsFetchService implements Job {
+public class NewsFetchService implements Job {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private static final String API_KEY = "389599afec1e4727a7de75f65b5f050c"; /*API Key required for newapi.org*/
     private URI APIQueryURI; /*To be passed from NewsAPIAdapter*/
     private WebClient webClient;
     private List<Article> articlesList;
+    private PublishSubject<Article> articlePublishSubject;
+
+    private int callCount;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -52,7 +56,13 @@ class NewsFetchService implements Job {
                 .bodyToMono(NewsAPIResponseObject.class)
                 .block();
         assert newsAPIResponseObject != null : new EmptyArticlesException();
-        articlesList.addAll(Arrays.asList(newsAPIResponseObject.getArticles()));
+        System.out.println("API Called " + callCount + " times\n\n\n\n\n");
+        setCallCount(++callCount);
+//        articlesList.addAll(Arrays.asList(newsAPIResponseObject.getArticles()));
+        for (Article article : newsAPIResponseObject.getArticles()) {
+            articlePublishSubject.onNext(article);
+        }
+
     }
 
     private Activity convertToActivityStream(Article article) {
