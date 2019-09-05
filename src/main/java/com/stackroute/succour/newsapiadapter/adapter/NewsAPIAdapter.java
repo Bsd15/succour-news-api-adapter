@@ -4,13 +4,11 @@ import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyAPIQueryURIException;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyQueryParamsException;
 import com.stackroute.succour.newsapiadapter.service.NewsFetchService;
-import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import org.apache.http.client.utils.URIBuilder;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.adapter.rxjava.RxJava2Adapter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
