@@ -137,7 +137,7 @@ public class NewsAPIAdapter {
     public void startNewsStream() throws EmptyQueryParamsException, EmptyAPIQueryURIException, SchedulerException {
         if (this.queryParams != null && (!this.queryParams.isEmpty())) {
             buildURI();
-            /*Check if URI is not null*/
+            /*Check if URI is not Unull*/
             if (apiQueryURI != null) {
                 initNewsFetchJob();
                 addJobToScheduler();
@@ -178,6 +178,7 @@ public class NewsAPIAdapter {
      * @throws SchedulerException
      */
     public void stopNewsStream() throws SchedulerException {
+
         stopNewsFetchService();
     }
 }

@@ -30,8 +30,9 @@ public class NewsApiAdapterApplication {
 //			Thread.sleep(60L * 100L);
 //			newsAPIAdapter.getNewsStream().subscribe(article -> System.out.println(article));
 			PublishSubject<Activity> publishSubject = newsAPIAdapter.getArticleSubject();
-			Disposable disposable = publishSubject.subscribe(System.out::println);
-			publishSubject.doOnDispose(() -> System.out.println("Disposed"));
+			Disposable disposable = publishSubject.subscribe(activity -> {
+				System.out.println(activity);
+            });
 			newsAPIAdapter.startNewsStream();
 			Thread.sleep(60L * 300L);
 			disposable.dispose();

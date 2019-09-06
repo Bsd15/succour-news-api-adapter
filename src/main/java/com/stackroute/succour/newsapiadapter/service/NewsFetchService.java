@@ -7,6 +7,8 @@ import com.stackroute.succour.newsapiadapter.exceptions.EmptyArticlesException;
 import io.reactivex.subjects.PublishSubject;
 import lombok.*;
 import org.quartz.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.net.URI;
@@ -37,6 +39,7 @@ public class NewsFetchService implements Job {
     private URI APIQueryURI; /*To be passed from NewsAPIAdapter*/
     private WebClient webClient;
     private PublishSubject<Activity> articlePublishSubject;
+    private Logger logger = LoggerFactory.getLogger(NewsFetchService.class);
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -57,6 +60,9 @@ public class NewsFetchService implements Job {
         assert newsAPIResponseObject != null : new EmptyArticlesException();
         /*Convert the articles to activity stream object and send to publishSubject*/
         for (Article article : newsAPIResponseObject.getArticles()) {
+            assert article == null : "Empty article";
+            assert article.getContent() == null : "Empty content";
+            logger.info(article.toString());
             articlePublishSubject.onNext(convertToActivity(article));
         }
 
@@ -70,7 +76,7 @@ public class NewsFetchService implements Job {
     private Activity convertToActivity(Article article) {
         return activity()
                 .actor("News-adapter")
-                .object(object("article").content(article.toString()))
+                .object(object("article").content(article.getContent()))
                 .verb("fetched")
                 .get();
     }
