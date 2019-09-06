@@ -10,15 +10,17 @@ import org.quartz.*;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
+
+import static com.ibm.common.activitystreams.Makers.activity;
+import static com.ibm.common.activitystreams.Makers.object;
 
 /**
  * Service class to fetch data from newapi.org. The fields APIQueryURI, webClient,
  * articlesList will be passed from NewsAPIAdapter class using jobDataMap and will be
  * automatically assigned to the fields using the getters and setters.
- *
+ * <p>
  * The object of this class will be created and destroyed again and again and thus @PersistJobDataAfterExecution and
+ *
  * @DisallowConcurrentExecution are used to make the same data available for other instances
  * of this class.
  */
@@ -34,10 +36,7 @@ public class NewsFetchService implements Job {
     private static final String API_KEY = "389599afec1e4727a7de75f65b5f050c"; /*API Key required for newapi.org*/
     private URI APIQueryURI; /*To be passed from NewsAPIAdapter*/
     private WebClient webClient;
-    private List<Article> articlesList;
-    private PublishSubject<Article> articlePublishSubject;
-
-    private int callCount;
+    private PublishSubject<Activity> articlePublishSubject;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -56,17 +55,23 @@ public class NewsFetchService implements Job {
                 .bodyToMono(NewsAPIResponseObject.class)
                 .block();
         assert newsAPIResponseObject != null : new EmptyArticlesException();
-        System.out.println("API Called " + callCount + " times\n\n\n\n\n");
-        setCallCount(++callCount);
-//        articlesList.addAll(Arrays.asList(newsAPIResponseObject.getArticles()));
+        /*Convert the articles to activity stream object and send to publishSubject*/
         for (Article article : newsAPIResponseObject.getArticles()) {
-            articlePublishSubject.onNext(article);
+            articlePublishSubject.onNext(convertToActivity(article));
         }
 
     }
 
-    private Activity convertToActivityStream(Article article) {
-//        Activity articleActivity = activity().object(ob)
-        return null;
+    /**
+     * Convert the given article object into a Activity stream object.
+     * @param article Article to converted to activity stream object
+     * @return Activity
+     */
+    private Activity convertToActivity(Article article) {
+        return activity()
+                .actor("News-adapter")
+                .object(object("article").content(article.toString()))
+                .verb("fetched")
+                .get();
     }
 }

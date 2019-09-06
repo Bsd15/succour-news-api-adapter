@@ -1,5 +1,6 @@
 package com.stackroute.succour.newsapiadapter.adapter;
 
+import com.ibm.common.activitystreams.Activity;
 import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyAPIQueryURIException;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyQueryParamsException;
@@ -9,7 +10,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,29 +28,24 @@ import static org.quartz.TriggerBuilder.newTrigger;
  * The adapter passes values required by the NewsFetchService through JobDataMap.
  * The scheduler starts executing the job whenever the startNewsFetchService() is called.
  * The job is executed for every 5 seconds and the articles form the fetched data is added
- * to the articlesList.
+ * added to the PublishSubject<Article>.
  */
 public class NewsAPIAdapter {
 
     private List<String> queryParams; /*List of query strings to be added to the URI */
     private static final String BASE_URI = "https://newsapi.org/v2/everything"; /*BASE_URI for newapi.org*/
     private URI apiQueryURI = null; /*To store the URI formed by URIBuilder*/
-    private Flux<Article> newsResponseFlux;
     private WebClient webClient = WebClient.create();
     private SchedulerFactory schedulerFactory;
     private Scheduler scheduler;
     private JobDetail newsFetchJob;
     private Trigger trigger;
-    private ArrayList<Article> articlesList; /*Used to store the articles fetched from the service.*/
-    private PublishSubject<Article> articlePublishSubject;
-
-    int callCount = 1;
+    private PublishSubject<Activity> articlePublishSubject;
 
     public NewsAPIAdapter() throws IOException, SchedulerException {
         schedulerFactory = new StdSchedulerFactory();
         scheduler = schedulerFactory.getScheduler();
-        articlesList = new ArrayList();
-        trigger = newTrigger().withIdentity("myTrigger", "group1").startNow()
+        trigger = newTrigger().withIdentity("newsFetchTrigger", "newsFetchGroup").startNow()
                 .withSchedule(simpleSchedule().withIntervalInSeconds(5).repeatForever()).build();
         articlePublishSubject = PublishSubject.create();
     }
@@ -147,9 +142,6 @@ public class NewsAPIAdapter {
                 initNewsFetchJob();
                 addJobToScheduler();
                 startNewsFetchService();
-                newsResponseFlux = Flux.fromIterable(articlesList);
-//                flo = RxJava2Adapter.fluxToObservable(newsResponseFlux);
-//                articlesList.forEach(article -> articlePublishSubject.onNext(article));
             } else {
                 throw new EmptyAPIQueryURIException();
             }
@@ -164,25 +156,19 @@ public class NewsAPIAdapter {
      * The JobDataMap object is then used to build the newsFetchJob.
      */
     private void initNewsFetchJob() {
-        if (webClient != null && articlesList != null && apiQueryURI != null) {
+        if (webClient != null && apiQueryURI != null) {
             JobDataMap jobDataMap = new JobDataMap();
             jobDataMap.put("APIQueryURI", apiQueryURI);
             jobDataMap.put("webClient", webClient);
-            jobDataMap.put("articlesList", articlesList);
             jobDataMap.put("articlePublishSubject", articlePublishSubject);
-            jobDataMap.put("callCount", callCount);
             newsFetchJob = newJob(NewsFetchService.class)
-                    .withIdentity("job1", "group1")
+                    .withIdentity("newsFetchJob", "newsFetchJobGroup")
                     .usingJobData(jobDataMap)
                     .build();
         }
     }
 
-    public Flux<Article> getNewsStream() {
-        return this.newsResponseFlux;
-    }
-
-    public PublishSubject<Article> getArticlePublishSubject() {
+    public PublishSubject<Activity> getArticleSubject() {
         return articlePublishSubject;
     }
 

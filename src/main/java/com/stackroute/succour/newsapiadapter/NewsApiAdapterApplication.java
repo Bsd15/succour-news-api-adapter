@@ -1,5 +1,6 @@
 package com.stackroute.succour.newsapiadapter;
 
+import com.ibm.common.activitystreams.Activity;
 import com.stackroute.succour.newsapiadapter.adapter.NewsAPIAdapter;
 import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyAPIQueryURIException;
@@ -28,7 +29,7 @@ public class NewsApiAdapterApplication {
 			newsAPIAdapter.addQueryParam("india");
 //			Thread.sleep(60L * 100L);
 //			newsAPIAdapter.getNewsStream().subscribe(article -> System.out.println(article));
-			PublishSubject<Article> publishSubject = newsAPIAdapter.getArticlePublishSubject();
+			PublishSubject<Activity> publishSubject = newsAPIAdapter.getArticleSubject();
 			Disposable disposable = publishSubject.subscribe(System.out::println);
 			publishSubject.doOnDispose(() -> System.out.println("Disposed"));
 			newsAPIAdapter.startNewsStream();
