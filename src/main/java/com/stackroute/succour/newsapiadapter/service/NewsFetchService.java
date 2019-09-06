@@ -75,9 +75,9 @@ public class NewsFetchService implements Job {
      */
     private Activity convertToActivity(Article article) {
         return activity()
-                .actor("News-adapter")
+                .verb("post")
+                .actor("News-Adapter")
                 .object(object("article").content(article.getContent()))
-                .verb("fetched")
                 .get();
     }
 }
