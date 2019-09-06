@@ -1,7 +1,6 @@
 package com.stackroute.succour.newsapiadapter.adapter;
 
 import com.ibm.common.activitystreams.Activity;
-import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyAPIQueryURIException;
 import com.stackroute.succour.newsapiadapter.exceptions.EmptyQueryParamsException;
 import com.stackroute.succour.newsapiadapter.service.NewsFetchService;
@@ -41,12 +40,13 @@ public class NewsAPIAdapter {
     private JobDetail newsFetchJob;
     private Trigger trigger;
     private PublishSubject<Activity> articlePublishSubject;
+    private static final int schedulerInterval = 180;
 
     public NewsAPIAdapter() throws IOException, SchedulerException {
         schedulerFactory = new StdSchedulerFactory();
         scheduler = schedulerFactory.getScheduler();
         trigger = newTrigger().withIdentity("newsFetchTrigger", "newsFetchGroup").startNow()
-                .withSchedule(simpleSchedule().withIntervalInSeconds(5).repeatForever()).build();
+                .withSchedule(simpleSchedule().withIntervalInSeconds(schedulerInterval).repeatForever()).build();
         articlePublishSubject = PublishSubject.create();
     }
 
