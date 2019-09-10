@@ -1,5 +1,6 @@
 package com.stackroute.succour.newsapiadapter.service;
 
+
 import com.ibm.common.activitystreams.Activity;
 import com.stackroute.succour.newsapiadapter.domain.Article;
 import com.stackroute.succour.newsapiadapter.domain.NewsAPIResponseObject;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.net.URI;
+
+import static org.apache.commons.text.StringEscapeUtils.escapeJava;
 
 import static com.ibm.common.activitystreams.Makers.activity;
 import static com.ibm.common.activitystreams.Makers.object;
@@ -77,7 +80,7 @@ public class NewsFetchService implements Job {
         return activity()
                 .verb("post")
                 .actor("News-Adapter")
-                .object(object("article").content(article.getContent()))
+                .object(object("article").content(escapeJava(article.getContent())))
                 .get();
     }
 }

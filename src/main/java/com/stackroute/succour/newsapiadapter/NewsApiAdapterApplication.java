@@ -31,21 +31,19 @@ public class NewsApiAdapterApplication {
 //			newsAPIAdapter.getNewsStream().subscribe(article -> System.out.println(article));
 			PublishSubject<Activity> publishSubject = newsAPIAdapter.getArticleSubject();
 			Disposable disposable = publishSubject.subscribe(activity -> {
-				System.out.println(activity);
+				System.out.println(activity.toString());
             });
 			newsAPIAdapter.startNewsStream();
-			Thread.sleep(60L * 300L);
-			disposable.dispose();
-			System.out.println("Disposed");
-			Thread.sleep(60L * 100L);
-			newsAPIAdapter.stopNewsStream();
+//			Thread.sleep(60L * 300L);
+//			disposable.dispose();
+//			System.out.println("Disposed");
+//			Thread.sleep(60L * 100L);
+//			newsAPIAdapter.stopNewsStream();
 		} catch (IOException | EmptyQueryParamsException e) {
 			e.printStackTrace();
 		} catch (EmptyAPIQueryURIException e) {
 			e.printStackTrace();
 		} catch (SchedulerException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
